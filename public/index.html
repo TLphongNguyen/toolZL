@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zalo Service - Quản Lý Bạn Bè</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .status-card {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-badge {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+
+        .status-badge.active {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .status-badge.inactive {
+            background: #f44336;
+            color: white;
+        }
+
+        .status-badge.loading {
+            background: #ff9800;
+            color: white;
+        }
+
+        .search-section {
+            margin-bottom: 20px;
+        }
+
+        .search-form {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .form-group {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        input[type="text"],
+        input[type="number"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .friends-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .friend-card {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            border: 2px solid #e0e0e0;
+            transition: all 0.3s;
+        }
+
+        .friend-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            border-color: #667eea;
+        }
+
+        .friend-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin: 0 auto 15px;
+            display: block;
+            border: 3px solid #667eea;
+        }
+
+        .friend-info {
+            text-align: center;
+        }
+
+        .friend-name {
+            font-size: 1.2em;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .friend-id {
+            font-size: 0.9em;
+            color: #666;
+            font-family: monospace;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .loading::after {
+            content: '...';
+            animation: dots 1.5s steps(4, end) infinite;
+        }
+
+        @keyframes dots {
+            0%, 20% { content: '.'; }
+            40% { content: '..'; }
+            60%, 100% { content: '...'; }
+        }
+
+        .error {
+            background: #ffebee;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            border-left: 4px solid #c62828;
+        }
+
+        .success {
+            background: #e8f5e9;
+            color: #2e7d32;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            border-left: 4px solid #2e7d32;
+        }
+
+        .stats {
+            display: flex;
+            gap: 20px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            flex: 1;
+            min-width: 150px;
+            text-align: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .empty-state svg {
+            width: 100px;
+            height: 100px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .qr-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .qr-container {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            margin: 20px 0;
+        }
+
+        .qr-image {
+            max-width: 300px;
+            width: 100%;
+            height: auto;
+            border: 2px solid #667eea;
+            border-radius: 10px;
+        }
+
+        .qr-loading {
+            color: #666;
+            font-size: 1.1em;
+            margin: 20px 0;
+        }
+
+        .qr-error {
+            color: #c62828;
+            font-size: 1em;
+            margin: 15px 0;
+            padding: 15px;
+            background: #ffebee;
+            border-radius: 8px;
+            border-left: 4px solid #c62828;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2em;
+            }
+
+            .search-form {
+                flex-direction: column;
+            }
+
+            .friends-list {
+                grid-template-columns: 1fr;
+            }
+
+            .status-card {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔵 Zalo Service</h1>
+            <p>Quản lý và tìm kiếm bạn bè Zalo</p>
+        </div>
+
+        <!-- Status Card -->
+        <div class="card">
+            <h2 style="margin-bottom: 15px;">Trạng Thái Kết Nối</h2>
+            <div class="status-card">
+                <div class="status-item">
+                    <span>Server:</span>
+                    <span class="status-badge active" id="serverStatus">Đang kiểm tra...</span>
+                </div>
+                <div class="status-item">
+                    <span>Zalo Service:</span>
+                    <span class="status-badge loading" id="zaloStatus">Đang kiểm tra...</span>
+                </div>
+                <button class="btn btn-secondary" onclick="checkStatus()">🔄 Làm Mới</button>
+            </div>
+        </div>
+
+        <!-- QR Code Section -->
+        <div class="card qr-section">
+            <h2 style="margin-bottom: 15px;">📱 Quét Mã QR Để Đăng Nhập</h2>
+            <p style="color: #666; margin-bottom: 20px;">Sử dụng ứng dụng Zalo để quét mã QR bên dưới</p>
+            <div class="qr-container">
+                <div id="qrLoading" class="qr-loading">Đang tải mã QR...</div>
+                <img id="qrImage" class="qr-image" style="display: none;" alt="Mã QR">
+                <div id="qrError" class="qr-error" style="display: none;"></div>
+            </div>
+            <button class="btn btn-secondary" onclick="loadQR()" style="margin-top: 15px;">🔄 Tải Lại QR</button>
+        <!-- Excel Upload Section -->
+        <div class="card">
+            <h2 style="margin-bottom: 15px;">📊 Xử Lý File Excel</h2>
+            <p style="color: #666; margin-bottom: 20px;">Tải lên file Excel chứa danh sách số điện thoại để tìm user và gửi tin nhắn</p>
+            <div class="search-form">
+                <div class="form-group">
+                    <label for="excelFile">Chọn file Excel</label>
+                    <input type="file" id="excelFile" accept=".xlsx,.xls" style="padding: 10px;">
+                </div>
+                <div class="form-group" style="max-width: 200px;">
+                    <label for="timeoutInput" title="Thời gian chờ tối đa khi gửi mỗi tin nhắn. Nếu quá thời gian này sẽ coi là gửi thất bại.">Timeout (ms) <span style="color: #999; font-size: 0.85em;">(?)</span></label>
+                    <input type="number" id="timeoutInput" placeholder="5000" min="1000" value="5000" style="padding: 10px;" title="Thời gian chờ tối đa khi gửi mỗi tin nhắn (tính bằng mili giây)">
+                    <small style="color: #666; margin-top: 5px; display: block;">Thời gian chờ khi gửi tin nhắn (1000-30000 ms)</small>
+                </div>
+            </div>
+            <div class="actions">
+                <button class="btn btn-primary" onclick="uploadExcel()">
+                    📤 Bắt Đầu Xử Lý
+                </button>
+                <button class="btn btn-secondary" onclick="clearExcelForm()">
+                    ❌ Xoá
+                </button>
+            </div>
+            <div id="excelResult"></div>
+            <div id="excelProgress" style="margin-top: 20px; display: none;">
+                <div style="margin-bottom: 10px;">
+                    <strong>Tiến Độ:</strong>
+                    <span id="progressText">0/0</span>
+                </div>
+                <div style="width: 100%; height: 25px; background: #e0e0e0; border-radius: 5px; overflow: hidden;">
+                    <div id="progressBar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #667eea 0%, #764ba2 100%); transition: width 0.3s;"></div>
+                </div>
+            </div>
+        </div>
+
+        </div>
+
+    <script>
+        const API_BASE = window.location.origin;
+
+        // Kiểm tra trạng thái khi load trang
+        window.addEventListener('DOMContentLoaded', () => {
+            checkStatus();
+            loadQR();
+        });
+
+        // Tải mã QR
+        async function loadQR() {
+            const qrLoading = document.getElementById('qrLoading');
+            const qrImage = document.getElementById('qrImage');
+            const qrError = document.getElementById('qrError');
+
+            qrLoading.style.display = 'block';
+            qrImage.style.display = 'none';
+            qrError.style.display = 'none';
+
+            try {
+                // Thêm timestamp để đảm bảo không cache
+                const timestamp = new Date().getTime();
+                const response = await fetch(`${API_BASE}/qr?t=${timestamp}`);
+                
+                if (!response.ok) {
+                    const data = await response.json();
+                    throw new Error(data.message || 'Không thể tải mã QR');
+                }
+
+                const blob = await response.blob();
+                const url = URL.createObjectURL(blob);
+                qrImage.src = url;
+                qrImage.style.display = 'block';
+                qrLoading.style.display = 'none';
+            } catch (error) {
+                console.error('Lỗi tải QR:', error);
+                qrLoading.style.display = 'none';
+                qrError.style.display = 'block';
+                qrError.textContent = `Lỗi: ${error.message || 'Không thể tải mã QR. Vui lòng thử lại.'}`;
+            }
+        }
+
+        // Kiểm tra trạng thái server và Zalo
+        async function checkStatus() {
+            try {
+                // Kiểm tra server
+                const serverResponse = await fetch(`${API_BASE}/health`);
+                const serverData = await serverResponse.json();
+                
+                document.getElementById('serverStatus').textContent = 'Hoạt động';
+                document.getElementById('serverStatus').className = 'status-badge active';
+
+                // Kiểm tra Zalo
+                const zaloResponse = await fetch(`${API_BASE}/zalo/status`);
+                const zaloData = await zaloResponse.json();
+                
+                if (zaloData.initialized && zaloData.api === 'available') {
+                    document.getElementById('zaloStatus').textContent = 'Đã kết nối';
+                    document.getElementById('zaloStatus').className = 'status-badge active';
+                } else {
+                    document.getElementById('zaloStatus').textContent = 'Chưa kết nối';
+                    document.getElementById('zaloStatus').className = 'status-badge inactive';
+                }
+            } catch (error) {
+                document.getElementById('serverStatus').textContent = 'Lỗi kết nối';
+                document.getElementById('serverStatus').className = 'status-badge inactive';
+                document.getElementById('zaloStatus').textContent = 'Không xác định';
+                document.getElementById('zaloStatus').className = 'status-badge inactive';
+                console.error('Lỗi kiểm tra trạng thái:', error);
+            }
+        }
+
+        // Escape HTML để tránh XSS
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Upload và xử lý file Excel
+        async function uploadExcel() {
+            const fileInput = document.getElementById('excelFile');
+            const timeoutInput = document.getElementById('timeoutInput');
+            const resultEl = document.getElementById('excelResult');
+            const progressEl = document.getElementById('excelProgress');
+            const progressBar = document.getElementById('progressBar');
+            const progressText = document.getElementById('progressText');
+
+            if (!fileInput.files || !fileInput.files[0]) {
+                resultEl.innerHTML = '<div class="error">Vui lòng chọn file Excel</div>';
+                return;
+            }
+
+            const timeout = parseInt(timeoutInput.value) || 5000;
+            if (timeout < 1000) {
+                resultEl.innerHTML = '<div class="error">Timeout phải lớn hơn 1000ms</div>';
+                return;
+            }
+
+            const file = fileInput.files[0];
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('timeout', timeout);
+
+            resultEl.innerHTML = '<div class="loading">Đang tải lên và xử lý file...</div>';
+            progressEl.style.display = 'block';
+            progressBar.style.width = '0%';
+            progressText.textContent = '0/0';
+
+            try {
+                const response = await fetch(`${API_BASE}/api/process-excel`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    resultEl.innerHTML = `
+                        <div class="success">
+                            ✅ Xử lý thành công!<br>
+                            <strong>Thống kê:</strong><br>
+                            • Tổng số: ${escapeHtml(String(data.stats.total))}<br>
+                            • Tìm thấy: ${escapeHtml(String(data.stats.found))}<br>
+                            • Không tìm thấy: ${escapeHtml(String(data.stats.notFound))}<br>
+                            • Gửi tin nhắn thành công: ${escapeHtml(String(data.stats.sendMessageSuccess))}<br>
+                            • Gửi tin nhắn thất bại: ${escapeHtml(String(data.stats.sendMessageFailed))}<br>
+                            • Lỗi: ${escapeHtml(String(data.stats.error))}<br>
+                            <br>
+                            <a href="${escapeHtml(data.downloadUrl)}" download style="color: #667eea; text-decoration: underline;">📥 Tải file kết quả</a>
+                        </div>
+                    `;
+                    progressEl.style.display = 'none';
+                } else {
+                    resultEl.innerHTML = `<div class="error">${escapeHtml(data.message || 'Lỗi xử lý file')}</div>`;
+                    progressEl.style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Lỗi:', error);
+                resultEl.innerHTML = '<div class="error">Lỗi kết nối đến server. Vui lòng thử lại sau.</div>';
+                progressEl.style.display = 'none';
+            }
+        }
+
+        // Xóa form Excel
+        function clearExcelForm() {
+            document.getElementById('excelFile').value = '';
+            document.getElementById('timeoutInput').value = '5000';
+            document.getElementById('excelResult').innerHTML = '';
+            document.getElementById('excelProgress').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
