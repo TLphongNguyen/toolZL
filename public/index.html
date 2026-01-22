@@ -395,6 +395,327 @@
         </div>
       </section>
     </div>
+
+    <!-- Test Media Sending Section -->
+    <section class="bg-white backdrop-blur rounded-2xl shadow-xl p-5 md:p-6">
+      <div class="mb-4">
+        <h2 class="text-lg md:text-xl font-semibold text-gray-800">
+          📸 Test Gửi Media (Hình Ảnh/Video)
+        </h2>
+        <p class="text-sm text-gray-500 mt-1">
+          Gửi hình ảnh/video cho 1 người dùng theo UUID để test
+        </p>
+      </div>
+
+      <div class="space-y-4">
+        <!-- UUID Input -->
+        <div class="space-y-1.5">
+          <label for="mediaUuid" class="block text-sm font-medium text-gray-700">UUID người nhận</label>
+          <input id="mediaUuid" type="text"
+            class="block w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+            placeholder="Ví dụ: 7044559913024859939" x-model="media.uuid" />
+          <p class="text-xs text-gray-400">
+            UUID của người nhận (lấy từ cột "ID user" trong file Excel kết quả)
+          </p>
+        </div>
+
+        <!-- Media Files Upload -->
+        <div class="space-y-1.5">
+          <label for="mediaFiles" class="block text-sm font-medium text-gray-700">Chọn Hình Ảnh/Video</label>
+          <input id="mediaFiles" type="file" multiple accept="image/*,video/*"
+            class="block w-full text-sm text-gray-700 border border-gray-200 rounded-lg cursor-pointer bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+            x-on:change="handleMediaFileChange($event)" />
+          <p class="text-xs text-gray-400">
+            Hỗ trợ: jpg, jpeg, png, gif, mp4, mov, avi. Tối đa 10 files, mỗi file 50MB
+          </p>
+        </div>
+
+        <!-- Media Preview -->
+        <div x-show="media.files.length > 0" class="grid grid-cols-2 md:grid-cols-3 gap-3">
+          <template x-for="(file, index) in media.files" :key="index">
+            <div class="relative group rounded-lg overflow-hidden border border-gray-200 bg-gray-50 p-2">
+              <div class="aspect-square flex items-center justify-center bg-gray-100 rounded">
+                <template x-if="file.type.startsWith('image/')">
+                  <img :src="file.preview" :alt="file.name" class="w-full h-full object-cover rounded" />
+                </template>
+                <template x-if="file.type.startsWith('video/')">
+                  <div class="text-center text-gray-500">
+                    <svg class="w-12 h-12 mx-auto mb-1" fill="currentColor" viewBox="0 0 20 20">
+                      <path
+                        d="M2 6a2 2 0 012-2h6a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM14.553 7.106A1 1 0 0014 8v4a1 1 0 00.553.894l2 1A1 1 0 0018 13V7a1 1 0 00-1.447-.894l-2 1z" />
+                    </svg>
+                    <span class="text-xs">Video</span>
+                  </div>
+                </template>
+              </div>
+              <p class="text-xs text-gray-600 mt-1 truncate" x-text="file.name"></p>
+              <button type="button"
+                class="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition"
+                x-on:click="removeMediaFile(index)">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd"
+                    d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                    clip-rule="evenodd" />
+                </svg>
+              </button>
+            </div>
+          </template>
+        </div>
+
+        <!-- Info Box -->
+        <div class="rounded-lg bg-blue-50 border border-blue-200 px-4 py-3 text-sm text-blue-800">
+          <div class="flex items-start gap-2">
+            <svg class="w-5 h-5 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd"
+                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                clip-rule="evenodd" />
+            </svg>
+            <div>
+              <div class="font-semibold mb-1">ℹ️ Thông tin</div>
+              <div>Tin nhắn sẽ được tự động random từ 5 mẫu có sẵn khi gửi</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Timeout -->
+        <div class="space-y-1.5">
+          <label for="mediaTimeout" class="block text-sm font-medium text-gray-700">
+            Timeout (ms)
+          </label>
+          <input id="mediaTimeout" type="number" min="1000" max="30000" step="500"
+            class="block w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+            placeholder="10000 (ms)" x-model.number="media.timeout" />
+          <div class="flex flex-wrap items-center gap-2 pt-1">
+            <span class="text-xs text-gray-400 mr-1">
+              Chọn nhanh:
+            </span>
+            <button type="button"
+              class="px-2.5 py-1 rounded-full border border-gray-200 text-xs text-gray-700 hover:bg-gray-50"
+              x-on:click="media.timeout = 5000">
+              5000ms
+            </button>
+            <button type="button"
+              class="px-2.5 py-1 rounded-full border border-indigo-200 text-xs text-indigo-700 bg-indigo-50 hover:bg-indigo-100"
+              x-on:click="media.timeout = 10000">
+              10000ms (khuyến nghị)
+            </button>
+            <button type="button"
+              class="px-2.5 py-1 rounded-full border border-gray-200 text-xs text-gray-700 hover:bg-gray-50"
+              x-on:click="media.timeout = 15000">
+              15000ms
+            </button>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="flex flex-wrap items-center gap-3 pt-1">
+          <button type="button"
+            class="inline-flex items-center gap-2 rounded-lg bg-indigo-600 text-white text-sm font-medium px-4 py-2.5 shadow-md hover:bg-indigo-700 transition disabled:opacity-60 disabled:cursor-not-allowed"
+            x-on:click="sendMedia" x-bind:disabled="media.loading || !media.uuid || media.files.length === 0">
+            <span x-show="!media.loading">📤 Gửi Media</span>
+            <span x-show="media.loading">Đang gửi...</span>
+          </button>
+
+          <button type="button"
+            class="inline-flex items-center gap-2 rounded-lg border border-gray-200 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition"
+            x-on:click="resetMediaForm">
+            ❌ Xoá
+          </button>
+        </div>
+
+        <!-- Loading -->
+        <template x-if="media.loading">
+          <div class="flex items-center gap-2 text-sm text-gray-500 pt-1">
+            <svg class="animate-spin h-5 w-5 text-indigo-500" xmlns="http://www.w3.org/2000/svg" fill="none"
+              viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3.5-3.5L12 0v4a8 8 0 00-8 8h4z">
+              </path>
+            </svg>
+            <span>Đang gửi media...</span>
+          </div>
+        </template>
+
+        <!-- Error -->
+        <template x-if="media.error">
+          <div class="mt-2 rounded-xl border-l-4 border-red-500 bg-red-50 px-4 py-3 text-sm text-red-700"
+            x-text="media.error"></div>
+        </template>
+
+        <!-- Success Result -->
+        <template x-if="media.result">
+          <div
+            class="mt-2 rounded-xl border-l-4 border-emerald-500 bg-emerald-50 px-4 py-3 text-sm text-emerald-800 space-y-2">
+            <div class="font-semibold">✅ Gửi thành công!</div>
+            <div class="text-xs space-y-1">
+              <div>UUID: <span class="font-mono" x-text="media.result.uuid"></span></div>
+              <div>Số file đã gửi: <span class="font-semibold" x-text="media.result.mediaCount"></span></div>
+              <div>Tin nhắn đã gửi: "<span class="italic" x-text="media.result.randomMessage"></span>"</div>
+            </div>
+            <div class="text-xs text-emerald-700 pt-1">
+              Files: <span class="font-mono" x-text="media.result.mediaFiles.join(', ')"></span>
+            </div>
+          </div>
+        </template>
+      </div>
+    </section>
+
+    <!-- Bulk Media Sending Section -->
+    <section class="bg-white backdrop-blur rounded-2xl shadow-xl p-5 md:p-6">
+      <div class="mb-4">
+        <h2 class="text-lg md:text-xl font-semibold text-gray-800">
+          📸 Gửi Media Hàng Loạt (Từ Excel)
+        </h2>
+        <p class="text-sm text-gray-500 mt-1">
+          Gửi hình ảnh/video cho nhiều người dùng từ file Excel
+        </p>
+      </div>
+
+      <div class="space-y-4">
+        <!-- Excel File Upload -->
+        <div class="space-y-1.5">
+          <label for="bulkExcelFile" class="block text-sm font-medium text-gray-700">File Excel (Danh sách SĐT)</label>
+          <input id="bulkExcelFile" type="file" accept=".xlsx,.xls"
+            class="block w-full text-sm text-gray-700 border border-gray-200 rounded-lg cursor-pointer bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+            x-on:change="handleBulkExcelChange($event)" />
+          <p class="text-xs text-gray-400">
+            File Excel với SĐT ở cột B (cột 2)
+          </p>
+        </div>
+
+        <!-- Bulk Media Files Upload -->
+        <div class="space-y-1.5">
+          <label for="bulkMediaFiles" class="block text-sm font-medium text-gray-700">Chọn Hình Ảnh/Video</label>
+          <input id="bulkMediaFiles" type="file" multiple accept="image/*,video/*"
+            class="block w-full text-sm text-gray-700 border border-gray-200 rounded-lg cursor-pointer bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+            x-on:change="handleBulkMediaChange($event)" />
+          <p class="text-xs text-gray-400">
+            Tối đa 10 files, mỗi file 50MB. Gửi cùng media cho tất cả người nhận.
+          </p>
+        </div>
+
+        <!-- Bulk Media Preview -->
+        <div x-show="bulkMedia.mediaFiles.length > 0" class="grid grid-cols-3 md:grid-cols-5 gap-2">
+          <template x-for="(file, index) in bulkMedia.mediaFiles" :key="index">
+            <div class="relative group rounded-lg overflow-hidden border border-gray-200 bg-gray-50 p-1">
+              <div class="aspect-square flex items-center justify-center bg-gray-100 rounded text-xs">
+                <template x-if="file.type.startsWith('image/')">
+                  <img :src="file.preview" :alt="file.name" class="w-full h-full object-cover rounded" />
+                </template>
+                <template x-if="file.type.startsWith('video/')">
+                  <span class="text-gray-500">🎬</span>
+                </template>
+              </div>
+            </div>
+          </template>
+        </div>
+
+        <!-- Info Box -->
+        <div class="rounded-lg bg-blue-50 border border-blue-200 px-4 py-3 text-sm text-blue-800">
+          ℹ️ Tin nhắn sẽ được tự động random từ 5 mẫu có sẵn cho mỗi người nhận
+        </div>
+
+        <!-- Timeout -->
+        <div class="space-y-1.5">
+          <label for="bulkTimeout" class="block text-sm font-medium text-gray-700">Timeout (ms)</label>
+          <input id="bulkTimeout" type="number" min="1000" max="30000" step="500"
+            class="block w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+            placeholder="10000" x-model.number="bulkMedia.timeout" />
+          <div class="flex flex-wrap gap-2 pt-1">
+            <button type="button" class="px-2 py-1 rounded-full border text-xs hover:bg-gray-50"
+              x-on:click="bulkMedia.timeout = 10000">10s (khuyến nghị)</button>
+            <button type="button" class="px-2 py-1 rounded-full border text-xs hover:bg-gray-50"
+              x-on:click="bulkMedia.timeout = 15000">15s</button>
+            <button type="button" class="px-2 py-1 rounded-full border text-xs hover:bg-gray-50"
+              x-on:click="bulkMedia.timeout = 20000">20s</button>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="flex flex-wrap items-center gap-3 pt-1">
+          <button type="button"
+            class="inline-flex items-center gap-2 rounded-lg bg-indigo-600 text-white text-sm font-medium px-4 py-2.5 shadow-md hover:bg-indigo-700 transition disabled:opacity-60 disabled:cursor-not-allowed"
+            x-on:click="processBulkMedia"
+            x-bind:disabled="bulkMedia.loading || !bulkMedia.excelFile || bulkMedia.mediaFiles.length === 0">
+            <span x-show="!bulkMedia.loading">📤 Bắt Đầu Gửi Media</span>
+            <span x-show="bulkMedia.loading">Đang xử lý...</span>
+          </button>
+
+          <button type="button"
+            class="inline-flex items-center gap-2 rounded-lg border border-gray-200 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition"
+            x-on:click="resetBulkMediaForm">
+            ❌ Xoá
+          </button>
+        </div>
+
+        <!-- Progress -->
+        <div
+          x-show="bulkMedia.jobId && (bulkMedia.status === 'running' || bulkMedia.status === 'paused' || bulkMedia.status === 'pending')"
+          class="pt-2 space-y-2">
+          <div class="flex items-center justify-between text-xs text-gray-500">
+            <span>Tiến độ: <span class="font-semibold text-gray-700"
+                x-text="`${bulkMedia.processed}/${bulkMedia.totalPhones}`"></span></span>
+            <span
+              x-text="bulkMedia.totalPhones ? `${Math.floor((bulkMedia.processed / bulkMedia.totalPhones) * 100)}%` : '0%'"></span>
+          </div>
+          <div class="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+            <div class="h-full bg-indigo-600 transition-all"
+              x-bind:style="`width: ${bulkMedia.totalPhones ? (bulkMedia.processed / bulkMedia.totalPhones) * 100 : 0}%`">
+            </div>
+          </div>
+          <div class="text-xs text-gray-500">
+            Đang xử lý: <span class="font-mono text-gray-700"
+              x-text="bulkMedia.currentPhone || 'Đang chuẩn bị...'"></span>
+          </div>
+
+          <!-- Controls -->
+          <div class="flex flex-wrap items-center gap-2 pt-2">
+            <button x-show="bulkMedia.status === 'running'" type="button"
+              class="px-3 py-1.5 rounded-lg border border-amber-200 bg-amber-50 text-xs text-amber-700 hover:bg-amber-100"
+              x-on:click="pauseBulkJob">⏸️ Tạm dừng</button>
+            <button x-show="bulkMedia.status === 'paused'" type="button"
+              class="px-3 py-1.5 rounded-lg border border-emerald-200 bg-emerald-50 text-xs text-emerald-700 hover:bg-emerald-100"
+              x-on:click="resumeBulkJob">▶️ Tiếp tục</button>
+            <button x-show="bulkMedia.status === 'running' || bulkMedia.status === 'paused'" type="button"
+              class="px-3 py-1.5 rounded-lg border border-red-200 bg-red-50 text-xs text-red-700 hover:bg-red-100"
+              x-on:click="cancelBulkJob">⏹️ Dừng</button>
+            <a x-show="bulkMedia.downloadUrl"
+              class="px-3 py-1.5 rounded-lg border border-indigo-200 bg-indigo-50 text-xs text-indigo-700 hover:bg-indigo-100"
+              x-bind:href="bulkMedia.downloadUrl" download>📥 Tải kết quả</a>
+          </div>
+        </div>
+
+        <!-- Warning -->
+        <template x-if="bulkMedia.warning">
+          <div class="mt-2 rounded-xl border-l-4 border-amber-500 bg-amber-50 px-4 py-3 text-sm text-amber-800"
+            x-text="bulkMedia.warning"></div>
+        </template>
+
+        <!-- Error -->
+        <template x-if="bulkMedia.error">
+          <div class="mt-2 rounded-xl border-l-4 border-red-500 bg-red-50 px-4 py-3 text-sm text-red-700"
+            x-text="bulkMedia.error"></div>
+        </template>
+
+        <!-- Completed -->
+        <template x-if="bulkMedia.status === 'completed'">
+          <div
+            class="mt-2 rounded-xl border-l-4 border-emerald-500 bg-emerald-50 px-4 py-3 text-sm text-emerald-800 space-y-2">
+            <div class="font-semibold">✅ Hoàn thành!</div>
+            <ul class="grid grid-cols-2 gap-1 text-xs">
+              <li>Tổng: <span class="font-semibold" x-text="bulkMedia.stats?.total || 0"></span></li>
+              <li>Tìm thấy: <span class="font-semibold" x-text="bulkMedia.stats?.found || 0"></span></li>
+              <li>Gửi thành công: <span class="font-semibold text-emerald-700"
+                  x-text="bulkMedia.stats?.sendMessageSuccess || 0"></span></li>
+              <li>Thất bại: <span class="font-semibold text-red-700"
+                  x-text="bulkMedia.stats?.sendMessageFailed || 0"></span></li>
+            </ul>
+            <a class="inline-flex items-center gap-2 text-sm font-medium text-indigo-700 hover:underline"
+              x-bind:href="bulkMedia.downloadUrl" download>📥 Tải file kết quả</a>
+          </div>
+        </template>
+      </div>
+    </section>
   </div>
 
   <script>
@@ -442,7 +763,33 @@
           display: '--:--',
           remainingSeconds: 0,
         },
+        // NEW: Media test state
+        media: {
+          uuid: '',
+          files: [],
+          timeout: 10000,
+          loading: false,
+          error: null,
+          result: null,
+        },
+        // NEW: Bulk media state
+        bulkMedia: {
+          excelFile: null,
+          mediaFiles: [],
+          timeout: 10000,
+          loading: false,
+          error: null,
+          warning: null,
+          jobId: null,
+          status: null,
+          totalPhones: 0,
+          processed: 0,
+          currentPhone: null,
+          downloadUrl: null,
+          stats: null,
+        },
         pollTimer: null,
+        bulkPollTimer: null, // NEW: Bulk media poll timer
         countdownTimer: null, // NEW: Countdown interval
 
         init() {
@@ -804,6 +1151,297 @@
             }
           } catch (e) {
             console.error('Lỗi cập nhật retry delay:', e);
+          }
+        },
+
+        // NEW: Media test functions
+        handleMediaFileChange(event) {
+          const files = event.target.files;
+          if (!files || files.length === 0) return;
+
+          // Convert FileList to Array and create preview URLs
+          const filesArray = Array.from(files).slice(0, 10); // Max 10 files
+          this.media.files = filesArray.map(file => ({
+            file: file,
+            name: file.name,
+            type: file.type,
+            size: file.size,
+            preview: file.type.startsWith('image/') ? URL.createObjectURL(file) : null
+          }));
+          this.media.error = null;
+        },
+
+        removeMediaFile(index) {
+          // Revoke preview URL if exists
+          if (this.media.files[index].preview) {
+            URL.revokeObjectURL(this.media.files[index].preview);
+          }
+          this.media.files.splice(index, 1);
+
+          // Clear file input if no files left
+          if (this.media.files.length === 0) {
+            const input = document.getElementById('mediaFiles');
+            if (input) input.value = '';
+          }
+        },
+
+        async sendMedia() {
+          this.media.error = null;
+          this.media.result = null;
+
+          if (!this.media.uuid) {
+            this.media.error = 'Vui lòng nhập UUID người nhận';
+            return;
+          }
+
+          if (this.media.files.length === 0) {
+            this.media.error = 'Vui lòng chọn ít nhất 1 file media';
+            return;
+          }
+
+          let timeout = Number(this.media.timeout) || 10000;
+          if (timeout < 1000) timeout = 1000;
+          if (timeout > 30000) timeout = 30000;
+          this.media.timeout = timeout;
+
+          this.media.loading = true;
+
+          try {
+            const formData = new FormData();
+            formData.append('uuid', this.media.uuid);
+            formData.append('timeout', String(timeout));
+
+            // Append all media files
+            this.media.files.forEach(fileObj => {
+              formData.append('media', fileObj.file);
+            });
+
+            const response = await fetch(`${API_BASE}/api/test/send-media`, {
+              method: 'POST',
+              body: formData,
+            });
+
+            const data = await response.json();
+
+            if (response.ok && data && data.success) {
+              this.media.result = data.data;
+            } else {
+              const message = (data && data.message) || 'Lỗi gửi media. Vui lòng thử lại.';
+              this.media.error = message;
+            }
+          } catch (error) {
+            console.error('Lỗi gửi media:', error);
+            this.media.error = 'Lỗi kết nối đến server. Vui lòng thử lại.';
+          } finally {
+            this.media.loading = false;
+          }
+        },
+
+        resetMediaForm() {
+          // Revoke all preview URLs
+          this.media.files.forEach(fileObj => {
+            if (fileObj.preview) {
+              URL.revokeObjectURL(fileObj.preview);
+            }
+          });
+
+          const input = document.getElementById('mediaFiles');
+          if (input) input.value = '';
+
+          this.media.uuid = '';
+          this.media.files = [];
+          this.media.timeout = 10000;
+          this.media.loading = false;
+          this.media.error = null;
+          this.media.result = null;
+        },
+
+        // NEW: Bulk Media functions
+        handleBulkExcelChange(event) {
+          const files = event.target.files;
+          this.bulkMedia.excelFile = files && files[0] ? files[0] : null;
+        },
+
+        handleBulkMediaChange(event) {
+          const files = event.target.files;
+          if (!files || files.length === 0) return;
+
+          // Append new files to existing ones, max 10 total
+          const currentCount = this.bulkMedia.mediaFiles.length;
+          const remainingSlots = 10 - currentCount;
+
+          if (remainingSlots <= 0) return;
+
+          const filesArray = Array.from(files).slice(0, remainingSlots);
+
+          const newFiles = filesArray.map(file => ({
+            file: file,
+            name: file.name,
+            type: file.type,
+            size: file.size,
+            preview: file.type.startsWith('image/') ? URL.createObjectURL(file) : null
+          }));
+
+          this.bulkMedia.mediaFiles = [...this.bulkMedia.mediaFiles, ...newFiles];
+          this.bulkMedia.error = null;
+
+          // Clear input so same files can be selected again
+          event.target.value = '';
+        },
+
+        removeBulkMediaFile(index) {
+          // Revoke preview URL if exists
+          if (this.bulkMedia.mediaFiles[index].preview) {
+            URL.revokeObjectURL(this.bulkMedia.mediaFiles[index].preview);
+          }
+          this.bulkMedia.mediaFiles.splice(index, 1);
+        },
+
+        async processBulkMedia() {
+          this.bulkMedia.error = null;
+          this.bulkMedia.warning = null;
+          this.bulkMedia.jobId = null;
+          this.bulkMedia.status = null;
+          this.bulkMedia.stats = null;
+          this.bulkMedia.downloadUrl = null;
+
+          if (!this.bulkMedia.excelFile) {
+            this.bulkMedia.error = 'Vui lòng chọn file Excel danh sách SĐT';
+            return;
+          }
+
+          if (this.bulkMedia.mediaFiles.length === 0) {
+            this.bulkMedia.error = 'Vui lòng chọn ít nhất 1 file media';
+            return;
+          }
+
+          let timeout = Number(this.bulkMedia.timeout) || 10000;
+          if (timeout < 1000) timeout = 1000;
+          if (timeout > 30000) timeout = 30000;
+          this.bulkMedia.timeout = timeout;
+
+          this.bulkMedia.loading = true;
+
+          try {
+            const formData = new FormData();
+            formData.append('file', this.bulkMedia.excelFile);
+            formData.append('timeout', String(timeout));
+
+            // Append media files
+            this.bulkMedia.mediaFiles.forEach(fileObj => {
+              formData.append('media', fileObj.file);
+            });
+
+            const response = await fetch(`${API_BASE}/api/process-media`, {
+              method: 'POST',
+              body: formData,
+            });
+
+            const data = await response.json();
+
+            if (response.ok && data && data.success && data.jobId) {
+              this.bulkMedia.jobId = String(data.jobId);
+              this.bulkMedia.totalPhones = Number(data.totalPhones ?? 0);
+              this.bulkMedia.status = 'running';
+              this.startBulkPollingJob();
+            } else {
+              const message = (data && data.message) || 'Lỗi khởi tạo job. Vui lòng thử lại.';
+              this.bulkMedia.error = message;
+            }
+          } catch (error) {
+            console.error('Lỗi bulk media:', error);
+            this.bulkMedia.error = 'Lỗi kết nối đến server.';
+          } finally {
+            this.bulkMedia.loading = false;
+          }
+        },
+
+        async startBulkPollingJob() {
+          if (!this.bulkMedia.jobId) return;
+
+          if (this.bulkPollTimer) {
+            clearInterval(this.bulkPollTimer);
+            this.bulkPollTimer = null;
+          }
+
+          const pollOnce = async () => {
+            try {
+              const resp = await fetch(`${API_BASE}/api/jobs/${this.bulkMedia.jobId}`);
+              const data = await resp.json();
+
+              if (!resp.ok || !data || !data.success || !data.job) {
+                return;
+              }
+
+              const job = data.job;
+              this.bulkMedia.status = job.status;
+              this.bulkMedia.processed = Number(job.processed ?? 0);
+              this.bulkMedia.currentPhone = job.currentPhone || null;
+              this.bulkMedia.downloadUrl = job.downloadUrl || null;
+              this.bulkMedia.warning = job.warning || null;
+
+              // Stats
+              this.bulkMedia.stats = job.stats;
+
+              // Stop polling if done
+              if (['completed', 'failed', 'cancelled'].includes(job.status)) {
+                if (this.bulkPollTimer) {
+                  clearInterval(this.bulkPollTimer);
+                  this.bulkPollTimer = null;
+                }
+                if (job.status === 'failed') {
+                  this.bulkMedia.error = job.error || 'Job failed';
+                }
+              }
+            } catch (e) {
+              // ignore
+            }
+          };
+
+          await pollOnce();
+          this.bulkPollTimer = setInterval(pollOnce, 2000);
+        },
+
+        async pauseBulkJob() {
+          if (!this.bulkMedia.jobId) return;
+          await fetch(`${API_BASE}/api/jobs/${this.bulkMedia.jobId}/pause`, { method: 'POST' });
+        },
+
+        async resumeBulkJob() {
+          if (!this.bulkMedia.jobId) return;
+          await fetch(`${API_BASE}/api/jobs/${this.bulkMedia.jobId}/resume`, { method: 'POST' });
+        },
+
+        async cancelBulkJob() {
+          if (!this.bulkMedia.jobId) return;
+          await fetch(`${API_BASE}/api/jobs/${this.bulkMedia.jobId}/cancel`, { method: 'POST' });
+        },
+
+        resetBulkMediaForm() {
+          // Revoke previews
+          this.bulkMedia.mediaFiles.forEach(fileObj => {
+            if (fileObj.preview) URL.revokeObjectURL(fileObj.preview);
+          });
+
+          const excelInput = document.getElementById('bulkExcelFile');
+          if (excelInput) excelInput.value = '';
+
+          const mediaInput = document.getElementById('bulkMediaFiles');
+          if (mediaInput) mediaInput.value = '';
+
+          this.bulkMedia.excelFile = null;
+          this.bulkMedia.mediaFiles = [];
+          this.bulkMedia.loading = false;
+          this.bulkMedia.error = null;
+          this.bulkMedia.warning = null;
+          this.bulkMedia.jobId = null;
+          this.bulkMedia.status = null;
+          this.bulkMedia.stats = null;
+          this.bulkMedia.downloadUrl = null;
+
+          if (this.bulkPollTimer) {
+            clearInterval(this.bulkPollTimer);
+            this.bulkPollTimer = null;
           }
         },
       };
